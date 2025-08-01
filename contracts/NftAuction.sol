@@ -29,8 +29,6 @@ contract NftAuction is Initializable {
         address nftContract;
         // NFT ID
         uint256 tokenId;
-        // 参与竞价的资产类型 0x 地址表示eth，其他地址表示erc20
-        // 0x0000000000000000000000000000000000000000 表示eth
         address tokenAddress;
     }
 
@@ -48,7 +46,9 @@ contract NftAuction is Initializable {
     function initialize() public initializer {
         admin = msg.sender;
     }
-
+    constructor() {
+       admin = msg.sender;
+    }
     // 创建拍卖
     function createAuction(
         uint256 _duration,
@@ -57,17 +57,20 @@ contract NftAuction is Initializable {
         uint256 _tokenId
     ) public {
         // 只有管理员可以创建拍卖
+        console.log("createAuction", msg.sender, admin);
+        console.log("msg.sender.balance", msg.sender.balance);
+
         require(msg.sender == admin, "Only admin can create auctions");
         // 检查参数
         require(_duration >= 10, "Duration must be greater than 10s");
         require(_startPrice > 0, "Start price must be greater than 0");
 
         // 转移NFT到合约
-        IERC721(_nftAddress).safeTransferFrom(
-            msg.sender,
-            address(this),
-            _tokenId
-        );
+        // IERC721(_nftAddress).safeTransferFrom(
+        //     msg.sender,
+        //     address(this),
+        //     _tokenId
+        // );
 
         auctions[nextAuctionId] = Auction({
             seller: msg.sender,
@@ -108,9 +111,9 @@ contract NftAuction is Initializable {
         // 统一的价值尺度
         Auction storage auction = auctions[_auctionID];
         // 判断当前拍卖是否结束
-        require(auction.ended, "Auction has ended");
+        require(!auction.ended, "Auction has ended");
         require(
-            (auction.startTime + auction.duration) > block.timestamp,
+            (auction.startTime + auction.duration) < block.timestamp,
             "Auction has ended"
         );
         // 判断出价是否大于当前最高出价
@@ -174,9 +177,9 @@ contract NftAuction is Initializable {
             block.timestamp
         );
         // 判断当前拍卖是否结束
-        require(auction.ended, "Auction has ended");
+        require(!auction.ended, "Auction has ended");
         require(
-            (auction.startTime + auction.duration) > block.timestamp,
+            (auction.startTime + auction.duration) < block.timestamp,
             "Auction has ended"
         );
         // 转移NFT到最高出价者
