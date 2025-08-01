@@ -16,6 +16,7 @@ hardhat 依赖安装
 npm install --save-dev hardhat
 npm install -D hardhat-deploy
 npm install  @openzeppelin/hardhat-upgrades 
+npm install @chainlink/contracts
 ```
 
 hardhat 常用命令

@@ -3,9 +3,9 @@ const fs = require("fs");
 const path = require("path");
 
 // deploy/00_deploy_my_contract.js
-module.exports = async ({getNamedAccounts, deployments}) => {
-  const {deploy} = deployments;
-  const {deployer} = await getNamedAccounts();
+module.exports = async ({ getNamedAccounts, deployments }) => {
+  const { save } = deployments;
+  const { deployer } = await getNamedAccounts();
 
   console.log("部署用户地址：", deployer);
   const NftAuction = await ethers.getContractFactory("NftAuction");
@@ -38,7 +38,8 @@ module.exports = async ({getNamedAccounts, deployments}) => {
       abi: NftAuction.interface.format("json"),
     })
   );
-  await deploy("NftAuctionProxy", {
+  await save("NftAuctionProxy", {
+    from: deployer.address,
     abi: NftAuction.interface.format("json"),
     address: proxyAddress,
     // log: true,
