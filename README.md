@@ -14,11 +14,8 @@ npx hardhat ignition deploy ./ignition/modules/Lock.js
 hardhat 依赖安装
 ```
 npm install --save-dev hardhat
-npx hardhat init
-npx hardhat compile
 npm install -D hardhat-deploy
-npm install --save-dev  @nomiclabs/hardhat-ethers hardhat-deploy-ethers ethers
-npm install  @openzeppelin/hardhat-upgrades   --show-stack-traces  
+npm install  @openzeppelin/hardhat-upgrades 
 ```
 
 hardhat 常用命令
