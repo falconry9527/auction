@@ -31,15 +31,18 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
   const balance = await ethers.provider.getBalance(proxyAddressV2);
   console.log("代理合约余额 V2(wei):", balance.toString());
 
+  // 验证新功能
+  console.log("验证新功能 Contract version:", await nftAuctionProxyV2.version());
+
   // 保存代理合约地址
-  fs.writeFileSync(
-    storePath,
-    JSON.stringify({
-      proxyAddress: proxyAddressV2,
-      implAddress,
-      abi,
-    })
-  );
+  // fs.writeFileSync(
+  //   storePath,
+  //   JSON.stringify({
+  //     proxyAddress: proxyAddressV2,
+  //     implAddress,
+  //     abi,
+  //   })
+  // );
 
   await save("NftAuctionProxyV2", {
     abi,
