@@ -38,7 +38,6 @@ contract NftAuction is Initializable {
     uint256 public nextAuctionId;
     // 管理员地址
     address public admin;
-
     // Chainlink价格预言机映射
     mapping(address => AggregatorV3Interface) public priceFeeds;
 
@@ -93,13 +92,14 @@ contract NftAuction is Initializable {
         address tokenAddress
     ) public view returns (int) {
         AggregatorV3Interface priceFeed = priceFeeds[tokenAddress];
-            (
-            /* uint80 roundId */,
-            int256 answer,
-            /*uint256 startedAt*/,
-            /*uint256 updatedAt*/,
-            /*uint80 answeredInRound*/
-        ) = priceFeed.latestRoundData();
+        (
+            ,
+            /* uint80 roundId */ int256 answer,
+            ,
+            ,
+
+        ) = /*uint256 startedAt*/ /*uint256 updatedAt*/ /*uint80 answeredInRound*/
+            priceFeed.latestRoundData();
         return answer;
     }
 

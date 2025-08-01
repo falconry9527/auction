@@ -4,7 +4,7 @@ require("@openzeppelin/hardhat-upgrades")
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  solidity: "0.8.7", 
+  solidity: "0.8.28", 
   networks: {
     sepolia: {
       url: "https://sepolia.infura.io/v3/bdb2ede84fe04e41a6fc9b2c9506d8c7",
