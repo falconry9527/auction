@@ -42,10 +42,14 @@ contract NftAuction is Initializable {
     // Chainlink价格预言机映射
     mapping(address => AggregatorV3Interface) public priceFeeds;
 
-    constructor() {
-        // 初始化管理员
-       admin = msg.sender;
+    function initialize() public initializer {
+        admin = msg.sender;
     }
+    // 使用 一般部署的时候，需要打开 构造函数，关闭 initialize
+    // 使用 upgrades 的时候，则相反
+    // constructor() {
+    //     admin = msg.sender;
+    // }
     // 创建拍卖
     function createAuction(
         uint256 _duration,

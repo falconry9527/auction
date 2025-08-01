@@ -2,8 +2,7 @@
 
 This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a Hardhat Ignition module that deploys that contract.
 
-Try running some of the following tasks:
-
+hardhat 基础命令
 ```shell
 npx hardhat help
 npx hardhat test
@@ -12,14 +11,19 @@ npx hardhat node
 npx hardhat ignition deploy ./ignition/modules/Lock.js
 ```
 
-依赖安装
+hardhat 依赖安装
 ```
 npm install --save-dev hardhat
 npx hardhat init
 npx hardhat compile
-
 npm install -D hardhat-deploy
-
 npm install --save-dev  @nomiclabs/hardhat-ethers hardhat-deploy-ethers ethers
+npm install  @openzeppelin/hardhat-upgrades   --show-stack-traces  
+```
+
+hardhat 常用命令
+```
+npm cache clean --force
+npm config set registry https://mirrors.cloud.tencent.com/npm/
 
 ```
