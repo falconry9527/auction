@@ -16,8 +16,14 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
   const NftAuctionV2 = await ethers.getContractFactory("NftAuctionV2")
 
   // 升级代理合约
-  const nftAuctionProxyV2 = await upgrades.upgradeProxy(proxyAddress, NftAuctionV2)
+  console.log("代理合约地址 V1：", proxyAddress);
+  console.log("升级中.....");
+  const nftAuctionProxyV2 = await upgrades.upgradeProxy(proxyAddress, NftAuctionV2,{kind:"uups"})
+  console.log("升级成功，部署新合约.....");
+  console.log("Upgrade successful");
+
   await nftAuctionProxyV2.waitForDeployment()
+
 
   const proxyAddressV2 = await nftAuctionProxyV2.getAddress()
   console.log("代理合约地址 V2：", proxyAddressV2);
@@ -26,7 +32,7 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
   console.log("实现合约地址 V2：", implAddressV2);
 
   const balance = await ethers.provider.getBalance(proxyAddressV2);
-  console.log("代理合约余额 V2(wei):", proxyAddressV2.toString());
+  console.log("代理合约余额 V2(wei):", proxyAddressV2.balance());
 
   // 保存代理合约地址
   fs.writeFileSync(

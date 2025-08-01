@@ -8,7 +8,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
-contract NftAuction is Initializable {
+// 默认是 UUPS 代理
+contract NftAuction is Initializable, UUPSUpgradeable {
     // 结构体
     struct Auction {
         // 卖家
@@ -41,9 +42,6 @@ contract NftAuction is Initializable {
     // Chainlink价格预言机映射
     mapping(address => AggregatorV3Interface) public priceFeeds;
 
-    function initialize() public initializer {
-        admin = msg.sender;
-    }
     // 使用 一般部署的时候，需要打开 构造函数，关闭 initialize
     // 使用 upgrades 的时候，则相反
     // constructor() {
@@ -94,12 +92,11 @@ contract NftAuction is Initializable {
         AggregatorV3Interface priceFeed = priceFeeds[tokenAddress];
         (
             ,
-            /* uint80 roundId */ int256 answer,
+            /* uint80 roundId */ int256 answer /*uint256 startedAt*/ /*uint256 updatedAt*/ /*uint80 answeredInRound*/,
             ,
             ,
 
-        ) = /*uint256 startedAt*/ /*uint256 updatedAt*/ /*uint80 answeredInRound*/
-            priceFeed.latestRoundData();
+        ) = priceFeed.latestRoundData();
         return answer;
     }
 
@@ -192,4 +189,14 @@ contract NftAuction is Initializable {
         // 转移剩余的资金到卖家
         auction.ended = true;
     }
+
+    function initialize() public initializer {
+        admin = msg.sender;
+    }
+
+    function _authorizeUpgrade(address) internal view override {
+        // 只有管理员可以升级合约
+        require(msg.sender == admin, "Only admin can upgrade");
+    }
+
 }

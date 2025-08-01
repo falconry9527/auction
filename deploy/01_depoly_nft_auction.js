@@ -11,11 +11,13 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const NftAuction = await ethers.getContractFactory("NftAuction");
 
   // 通过代理合约部署
-  // [] initialize 的参数
   const nftAuctionProxy = await upgrades.deployProxy(NftAuction, [], {
     initializer: "initialize",
-  })
-
+    kind: "uups",
+    from: deployer,
+    log: true,
+  });
+  
   await nftAuctionProxy.waitForDeployment();
 
   const proxyAddress = await nftAuctionProxy.getAddress()

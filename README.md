@@ -28,10 +28,10 @@ npm config set registry https://mirrors.cloud.tencent.com/npm/
 
 不同脚本部署
 ```
-npx hardhat clean 
-npx hardhat compile
-npx hardhat deploy   --tags DeployNftAuction
-npx hardhat deploy   --tags UpgradeNftAuction
+npx hardhat clean && npx hardhat compile
+
+npx hardhat deploy   --tags DeployNftAuction --network sepolia 
+npx hardhat deploy   --tags UpgradeNftAuction --network sepolia 
 
 ```
 
