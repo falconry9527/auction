@@ -15,11 +15,11 @@ describe("starting ", function () {
         console.log("Admin address:", admin)
 
         // 检查合约余额
-        const balance = await ethers.provider.getBalance(nftAuction.address)
-        console.log("Contract balance:", ethers.utils.formatEther(balance))
+        // const balance = await ethers.provider.getBalance(nftAuction.address)
+        // console.log("Contract balance:", ethers.utils.formatEther(balance))
 
         nftAuction.createAuction(100, ethers.parseEther("0.0000001"), ethers.ZeroAddress, 1)
-        nftAuction.auctions(1).then(auction => {
+        nftAuction.auctions().then(auction => {
             console.log("Auction details:", auction)
         })
 
