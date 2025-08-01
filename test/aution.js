@@ -48,9 +48,7 @@ async function main() {
         const { token, priceFeed } = token2Usd[i];
         await nftAuction.setPriceFeed(token, priceFeed);
     }
-    nftAuctionProxy.setPriceFeed()
-
-    // 1. 部署 ERC721 合约
+    // 1. 部署 ERC721 合约(部署一个NFC)
     const TestERC721 = await ethers.getContractFactory("TestERC721");
     const testERC721 = await TestERC721.deploy();
     await testERC721.waitForDeployment();
