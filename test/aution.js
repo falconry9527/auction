@@ -20,7 +20,10 @@ describe("NftAuction (UUPS Upgradeable)", function () {
       kind: "uups",
       initializer: "initialize"
     });
+
     await proxy.waitForDeployment();
+    console.log("部署合约=====:");
+
   });
 
   it("Should deploy with UUPS proxy", async function () {
@@ -83,9 +86,10 @@ describe("NftAuction (UUPS Upgradeable)", function () {
 
     // 检查拍卖结束时间是否延长
     const auction = await upgraded.getAuction(0);
-    console.log("结束时间:", auction.endTime);
-    console.log("延长时间:", currentBlock.timestamp + 16 * 60);
+    console.log("开始时间:", auction.startTime);
+    console.log("结束时间:", (auction.endTime-1n));
+    console.log("延长时间:", BigInt(currentBlock.timestamp + 15 * 60));
 
-    expect(auction.endTime).to.equal(currentBlock.timestamp + 16 * 60); // 延长15分钟
+    expect(auction.endTime-1n).to.equal(BigInt(currentBlock.timestamp + 15 * 60)); // 延长15分钟
   });
 });
