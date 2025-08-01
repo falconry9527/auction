@@ -186,7 +186,7 @@ contract NftAuction is Initializable, UUPSUpgradeable {
             auction.highestBidder,
             auction.tokenId
         );
-        // 转移剩余的资金到卖家
+        // 转移剩余的资金到卖家Test auction
         auction.ended = true;
     }
 
