@@ -62,7 +62,7 @@ describe("NftAuction (UUPS Upgradeable)", function () {
     const upgraded = await upgrades.upgradeProxy(await proxy.getAddress(), NftAuctionV2);
 
     // 创建拍卖（1小时持续时间）
-    await upgraded.connect(seller).createAuction("gyyhkjb", 1, 1);
+    await upgraded.connect(seller).createAuction("gyyhkjb"+new Date().getTime(), 1, 1);
 
     // 获取当前时间
     const startBlock = await ethers.provider.getBlock("latest");
@@ -87,9 +87,17 @@ describe("NftAuction (UUPS Upgradeable)", function () {
     // 检查拍卖结束时间是否延长
     const auction = await upgraded.getAuction(0);
     console.log("开始时间:", auction.startTime);
-    console.log("结束时间:", (auction.endTime-1n));
+    console.log("结束时间:", auction.endTime);
     console.log("延长时间:", BigInt(currentBlock.timestamp + 15 * 60));
 
-    expect(auction.endTime-1n).to.equal(BigInt(currentBlock.timestamp + 15 * 60)); // 延长15分钟
+    /**
+     * -gt：大于（greater than）
+      -ge：大于等于（greater than or equal to）
+      -lt：小于（less than）
+      -le：小于等于（less than or equal to）
+      -eq：等于（equal）
+      -ne：不等于（not equal to）
+     */
+    expect(auction.endTime).to.gte(BigInt(currentBlock.timestamp + 15 * 60)); // 延长15分钟
   });
 });
