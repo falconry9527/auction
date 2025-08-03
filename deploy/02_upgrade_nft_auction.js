@@ -8,45 +8,34 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
   console.log("部署用户地址 V2：", deployer)
 
   // 读取 .cache/proxyNftAuction.json文件
-  const storePath = path.resolve(__dirname, "./.cache/proxyNftAuction.json");
+  const storePath = path.resolve(__dirname, "../deployments/sepolia/NftAuctionProxy.json");
   const storeData = fs.readFileSync(storePath, "utf-8");
-  const { proxyAddress, implAddress, abi } = JSON.parse(storeData);
+  const { address } = JSON.parse(storeData);
 
-  // 升级版的业务合约
+  // 获取合约工厂
   const NftAuctionV2 = await ethers.getContractFactory("NftAuctionV2")
 
   // 升级代理合约
-  console.log("代理合约地址 V1：", proxyAddress);
-  console.log("升级中.....");
-  const nftAuctionProxyV2 = await upgrades.upgradeProxy(proxyAddress, NftAuctionV2,{kind:"uups"})
-  console.log("升级成功，部署新合约.....");
+  const nftAuctionProxyV2 = await upgrades.upgradeProxy(address, NftAuctionV2, { kind: "uups" })
   await nftAuctionProxyV2.waitForDeployment()
+  console.log("升级成功 V2");
 
   const proxyAddressV2 = await nftAuctionProxyV2.getAddress()
+  const impAddressV2 = await upgrades.erc1967.getImplementationAddress(proxyAddressV2)
   console.log("代理合约地址 V2：", proxyAddressV2);
+  console.log("实现合约地址 V2：", impAddressV2);
 
-  const implAddressV2 = await upgrades.erc1967.getImplementationAddress(proxyAddressV2)
-  console.log("实现合约地址 V2：", implAddressV2);
-
-  const balance = await ethers.provider.getBalance(proxyAddressV2);
-  console.log("代理合约余额 V2(wei):", balance.toString());
 
   // 验证新功能
   console.log("验证新功能 Contract version:", await nftAuctionProxyV2.version());
 
-  // 保存代理合约地址
-  // fs.writeFileSync(
-  //   storePath,
-  //   JSON.stringify({
-  //     proxyAddress: proxyAddressV2,
-  //     implAddress,
-  //     abi,
-  //   })
-  // );
-
+  // 保存合约信息
   await save("NftAuctionProxyV2", {
-    abi,
-    address: proxyAddressV2,
+    from: deployer.address,
+    abi: NftAuction.interface.format("json"),
+    proxyAddress: proxyAddress,
+    impAddress: impAddress,
+    // log: true,
   })
 }
 

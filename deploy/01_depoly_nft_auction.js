@@ -1,5 +1,4 @@
 const { deployments, upgrades, ethers } = require("hardhat");
-const fs = require("fs");
 const path = require("path");
 
 // deploy/00_deploy_my_contract.js
@@ -8,38 +7,25 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   const { deployer } = await getNamedAccounts();
 
   console.log("部署用户地址：", deployer);
+  // 获取合约工厂
   const NftAuction = await ethers.getContractFactory("NftAuction");
 
   // 通过代理合约部署
-  const nftAuctionProxy = await upgrades.deployProxy(NftAuction, [], {
+  const nftAuctionProxy = await upgrades.deployProxy(NftAuction, [10, 1], {
     initializer: "initialize",
     kind: "uups",
     from: deployer,
     log: true,
   });
-  
   await nftAuctionProxy.waitForDeployment();
+  console.log("部署成功...");
 
-  const proxyAddress = await nftAuctionProxy.getAddress()
+  const proxyAddress=await nftAuctionProxy.getAddress() 
+  const impAddress=await upgrades.erc1967.getImplementationAddress(proxyAddress)
   console.log("代理合约地址：", proxyAddress);
-
-  const implAddress = await upgrades.erc1967.getImplementationAddress(proxyAddress)
-  console.log("实现合约地址：", implAddress);
-
-  const balance = await ethers.provider.getBalance(implAddress);
-  console.log("代理合约余额 (wei):", balance.toString());
+  console.log("实现合约地址：", impAddress);
 
   // 保存合约信息
-  const storePath = path.resolve(__dirname, "./.cache/proxyNftAuction.json");
-
-  fs.writeFileSync(
-    storePath,
-    JSON.stringify({
-      proxyAddress,
-      implAddress,
-      abi: NftAuction.interface.format("json"),
-    })
-  );
   await save("NftAuctionProxy", {
     from: deployer.address,
     abi: NftAuction.interface.format("json"),
