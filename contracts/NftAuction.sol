@@ -6,6 +6,9 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+
 
 contract NftAuction is
     Initializable,
@@ -21,9 +24,11 @@ contract NftAuction is
         uint256 startTime;
         uint256 endTime;
         uint256 startPrice;
-        address highestBidder; // 最高出价地址
-        uint256 highestBid; // 出的最高价
+        address highestBidder; // 最高出价的用户地址
+        uint256 highestBid; // 出的最高价（换算成USDT）
         bool ended;
+        address highestBidToken ; // 代币合约地址： 最高出价
+        uint256 highestBidAmount; // 代币数量 ：最高出价
     }
 
     // Mapping of auction ID to Auction
@@ -45,6 +50,7 @@ contract NftAuction is
 
     // 拍卖地址是否被允许的mapping
     mapping(address => bool) public approvedNftContracts;
+
 
     // 一些事件
     // 拍卖被创建事件，打印日志
@@ -80,7 +86,7 @@ contract NftAuction is
     function initialize(
         uint256 _minAuctionDuration,
         uint256 _platformFeePercentage
-   ) public initializer {
+    ) public initializer {
         __Ownable_init(msg.sender);
         __UUPSUpgradeable_init();
 
@@ -88,6 +94,30 @@ contract NftAuction is
         platformFeePercentage = _platformFeePercentage;
         feeRecipient = msg.sender;
         nextAuctionId = 1;
+
+        // 初始化常用代币价格预言机 (示例)
+        priceFeeds[0x6B175474E89094C44Da98b954EedeAC495271d0F] = 0xAed0c38402a5d19df6E4c03F4E2DceD6e29c1ee9; // DAI/USD
+        priceFeeds[0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2] = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419; // WETH/USD
+        
+    }
+    mapping(address => address) public priceFeeds; // ERC20 => Chainlink 价格预言机
+
+    // 添加/更新代币价格预言机
+    function setPriceFeed(address token, address aggregator) external onlyOwner {
+        priceFeeds[token] = aggregator;
+    }
+
+    /**
+     * @notice 获取对应代币的价格 10 美元 返回的是 10* 10^8 
+     */
+    function getChainlinkDataFeedLatestAnswer(
+        address token,
+        uint256 amount
+    ) public view returns (uint256) {
+        address aggregator = priceFeeds[token];
+        require(aggregator != address(0), "Price feed not available");
+        (,int256 answer,,,) = AggregatorV3Interface(aggregator).latestRoundData();
+        return amount * uint256(answer);
     }
 
     // 允许升级
@@ -113,7 +143,7 @@ contract NftAuction is
         require(approvedNftContracts[nftContract], unicode"NFT 拍卖不被允许");
         require(duration >= minAuctionDuration, unicode"Duration 太短");
 
-        // 转移NFT到合约 。 tokenId 是nft合约（nftContract） 下的某个nft的id ，必须归属卖家(msg.sender)
+        // 转移NFT到合约 , tokenId 是nft合约（nftContract）下的某个nft的id ，必须归属卖家(msg.sender)
         IERC721(nftContract).safeTransferFrom(
             msg.sender,
             address(this),
@@ -134,7 +164,9 @@ contract NftAuction is
             startPrice: startPrice,
             highestBidder: address(0), // 初始地址0
             highestBid: 0,
-            ended: false
+            ended: false,
+            highestBidToken: address(0), // 初始地址0
+            highestBidAmount: 0
         });
 
         // 发送拍卖创建成功的日志
@@ -158,25 +190,39 @@ contract NftAuction is
      * 自带参数
      * msg.sender ： 买家地址
      * msg.value ：Solidity中的payable函数在调用时，所有发送的ETH会自动存入合约的余额（无需显式代码）
+     * token 代币的合约地址
      * @param auctionId  拍卖id
      */
-    function placeBid(uint256 auctionId) external payable {
-        // 调用这个函数的时候，买家已经把钱存入到合约了
+    function placeBid(uint256 auctionId, address token, uint256 amount) external {
         Auction storage auction = auctions[auctionId];
-        require(block.timestamp >= auction.startTime, unicode"拍卖还没有开始");
-        require(block.timestamp <= auction.endTime, unicode"拍卖已经结束");
-        require(!auction.ended,unicode"拍卖已经结束");
-        require(msg.value > auction.highestBid, unicode"出价太低");
-        require(msg.value >= auction.startPrice, unicode"出价低于起拍价");
-        require(msg.sender != auction.seller, unicode"卖家不能出价");
+        require(block.timestamp >= auction.startTime, "Auction not started");
+        require(block.timestamp <= auction.endTime, "Auction ended");
+        require(!auction.ended, "Auction already ended");
+        require(token != address(0), "Invalid token");
+
+        // 计算 USDT 计价的有效出价
+        uint256 usdtAmount = getChainlinkDataFeedLatestAnswer(token, amount);
+        require(usdtAmount > auction.highestBid, "Bid too low");
+        require(usdtAmount >= auction.startPrice, "Bid below start price");
+
+        // 转移代币到合约
+        IERC20(token).transferFrom(msg.sender, address(this), amount);
+        // 退还前一个出价者的代币
         if (auction.highestBidder != address(0)) {
-            // 上一个出价者不是初始地址
-            // 新的出价者把钱转给上一个出价者
-            payable(auction.highestBidder).transfer(auction.highestBid);
+            // 如果有前一个出价的,本合约(隐式代码) 退还 代币highestBidToken(代币的合约地址)，给 auction.highestBidder
+            IERC20(auction.highestBidToken).transfer(
+                auction.highestBidder, 
+                auction.highestBidAmount
+            );
         }
+
+        // 更新最高出价
         auction.highestBidder = msg.sender;
-        auction.highestBid = msg.value;
-        emit BidPlaced(auctionId, msg.sender, msg.value);
+        auction.highestBid = usdtAmount; 
+        auction.highestBidToken = token;
+        auction.highestBidAmount = amount;
+
+        emit BidPlaced(auctionId, msg.sender, usdtAmount);
     }
 
     /**
@@ -194,11 +240,11 @@ contract NftAuction is
             unicode"只有合约所有者和卖家可以结束拍卖"
         );
 
-        auction.ended = true ;
+        auction.ended = true;
 
         if (auction.highestBidder != address(0)) {
             // 拍卖的钱给卖家
-            uint256 platformFee = (auction.highestBid * platformFeePercentage) / 100;
+            uint256 platformFee = (auction.highestBid * platformFeePercentage) /100;
             uint256 sellerProceeds = auction.highestBid - platformFee;
             payable(auction.seller).transfer(sellerProceeds);
             // 结算手续费给合约（由合约所有者指定）
@@ -310,49 +356,51 @@ contract NftAuction is
         return this.onERC721Received.selector;
     }
 
-
     /**
-    * 所有人调用
+     * 所有人调用
      * @notice 获取拍卖会信息
      * @param auctionId ID of the auction
      * @return Auction details
      */
-    function getAuction(uint256 auctionId) external view returns (Auction memory) {
+    function getAuction(
+        uint256 auctionId
+    ) external view returns (Auction memory) {
         return auctions[auctionId];
     }
-    
+
     /**
-    *  所有人调用
+     *  所有人调用
      * @notice 拍卖是否进行中
      * @param auctionId ID of the auction
      * @return True if auction is active
      */
     function isAuctionActive(uint256 auctionId) external view returns (bool) {
         Auction storage auction = auctions[auctionId];
-        return 
-            !auction.ended && 
-            block.timestamp >= auction.startTime && 
+        return
+            !auction.ended &&
+            block.timestamp >= auction.startTime &&
             block.timestamp <= auction.endTime;
     }
-    
+
     /**
-    *  所有人调用
-     * @notice 获取最高价
+     *  所有人调用
+     * @notice Get the current highest bid for an auction
      * @param auctionId ID of the auction
      * @return Highest bid amount
      */
     function getHighestBid(uint256 auctionId) external view returns (uint256) {
         return auctions[auctionId].highestBid;
     }
-    
+
     /**
      *  所有人调用
-     * @notice 获取最高价地址
+     * @notice 获取最高价
      * @param auctionId ID of the auction
      * @return Highest bidder address
      */
-    function getHighestBidder(uint256 auctionId) external view returns (address) {
+    function getHighestBidder(
+        uint256 auctionId
+    ) external view returns (address) {
         return auctions[auctionId].highestBidder;
     }
-
 }
