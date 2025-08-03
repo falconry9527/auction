@@ -1,5 +1,5 @@
 {
-  "address": "0x3F373e074BCEC513C0635124B0520b5bcF137E50",
+  "address": "0x3fD85AA00Eb383206f7D275eac42445f9eB9D924",
   "abi": [
     "constructor()",
     "error AddressEmptyCode(address)",
@@ -22,12 +22,13 @@
     "function UPGRADE_INTERFACE_VERSION() view returns (string)",
     "function approveNftContract(address)",
     "function approvedNftContracts(address) view returns (bool)",
-    "function auctions(uint256) view returns (address,address,uint256,uint256,uint256,uint256,address,uint256,bool)",
+    "function auctions(uint256) view returns (address,address,uint256,uint256,uint256,uint256,address,uint256,bool,address,uint256)",
     "function cancelAuction(uint256)",
     "function createAuction(address,uint256,uint256,uint256)",
     "function endAuction(uint256)",
     "function feeRecipient() view returns (address)",
-    "function getAuction(uint256) view returns ((address,address,uint256,uint256,uint256,uint256,address,uint256,bool))",
+    "function getAuction(uint256) view returns ((address,address,uint256,uint256,uint256,uint256,address,uint256,bool,address,uint256))",
+    "function getChainlinkDataFeedLatestAnswer(address,uint256) view returns (uint256)",
     "function getHighestBid(uint256) view returns (uint256)",
     "function getHighestBidder(uint256) view returns (address)",
     "function initialize(uint256,uint256)",
@@ -36,16 +37,18 @@
     "function nextAuctionId() view returns (uint256)",
     "function onERC721Received(address,address,uint256,bytes) pure returns (bytes4)",
     "function owner() view returns (address)",
-    "function placeBid(uint256) payable",
+    "function placeBid(uint256,address,uint256)",
     "function platformFeePercentage() view returns (uint256)",
+    "function priceFeeds(address) view returns (address)",
     "function proxiableUUID() view returns (bytes32)",
     "function renounceOwnership()",
     "function revokeNftContract(address)",
     "function setFeeRecipient(address)",
     "function setMinAuctionDuration(uint256)",
     "function setPlatformFeePercentage(uint256)",
+    "function setPriceFeed(address,address)",
     "function transferOwnership(address)",
     "function upgradeToAndCall(address,bytes) payable"
   ],
-  "numDeployments": 5
+  "numDeployments": 7
 }

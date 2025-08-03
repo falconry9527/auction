@@ -94,10 +94,10 @@ contract NftAuction is
         platformFeePercentage = _platformFeePercentage;
         feeRecipient = msg.sender;
         nextAuctionId = 1;
-
+        
         // 初始化常用代币价格预言机 (示例)
-        priceFeeds[0x6B175474E89094C44Da98b954EedeAC495271d0F] = 0xAed0c38402a5d19df6E4c03F4E2DceD6e29c1ee9; // DAI/USD
-        priceFeeds[0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2] = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419; // WETH/USD
+       // priceFeeds[0x6B175474E89094C44Da98b954EedeAC495271d0F] = 0xAed0c38402a5d19df6E4c03F4E2DceD6e29c1ee9; // DAI/USD
+       // priceFeeds[0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2] = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419; // WETH/USD
         
     }
     mapping(address => address) public priceFeeds; // ERC20 => Chainlink 价格预言机
