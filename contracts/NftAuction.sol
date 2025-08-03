@@ -310,4 +310,49 @@ contract NftAuction is
         return this.onERC721Received.selector;
     }
 
+
+    /**
+    * 所有人调用
+     * @notice 获取拍卖会信息
+     * @param auctionId ID of the auction
+     * @return Auction details
+     */
+    function getAuction(uint256 auctionId) external view returns (Auction memory) {
+        return auctions[auctionId];
+    }
+    
+    /**
+    *  所有人调用
+     * @notice 拍卖是否进行中
+     * @param auctionId ID of the auction
+     * @return True if auction is active
+     */
+    function isAuctionActive(uint256 auctionId) external view returns (bool) {
+        Auction storage auction = auctions[auctionId];
+        return 
+            !auction.ended && 
+            block.timestamp >= auction.startTime && 
+            block.timestamp <= auction.endTime;
+    }
+    
+    /**
+    *  所有人调用
+     * @notice 获取最高价
+     * @param auctionId ID of the auction
+     * @return Highest bid amount
+     */
+    function getHighestBid(uint256 auctionId) external view returns (uint256) {
+        return auctions[auctionId].highestBid;
+    }
+    
+    /**
+     *  所有人调用
+     * @notice 获取最高价地址
+     * @param auctionId ID of the auction
+     * @return Highest bidder address
+     */
+    function getHighestBidder(uint256 auctionId) external view returns (address) {
+        return auctions[auctionId].highestBidder;
+    }
+
 }

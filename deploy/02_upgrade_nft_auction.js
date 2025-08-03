@@ -17,8 +17,8 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
 
   // 升级代理合约
   const nftAuctionProxyV2 = await upgrades.upgradeProxy(address, NftAuctionV2, { kind: "uups" })
+  console.log("升级中...");
   await nftAuctionProxyV2.waitForDeployment()
-  console.log("升级成功 V2");
 
   const proxyAddressV2 = await nftAuctionProxyV2.getAddress()
   const impAddressV2 = await upgrades.erc1967.getImplementationAddress(proxyAddressV2)
@@ -32,10 +32,9 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
   // 保存合约信息
   await save("NftAuctionProxyV2", {
     from: deployer.address,
-    abi: NftAuction.interface.format("json"),
-    proxyAddress: proxyAddress,
-    impAddress: impAddress,
-    // log: true,
+    abi: NftAuctionV2.interface.format("json"),
+    adress: proxyAddressV2,
+    log: false,
   })
 }
 

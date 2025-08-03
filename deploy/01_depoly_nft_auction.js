@@ -1,4 +1,4 @@
-const { deployments, upgrades, ethers } = require("hardhat");
+const {upgrades, ethers } = require("hardhat");
 const path = require("path");
 
 // deploy/00_deploy_my_contract.js
@@ -17,8 +17,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     from: deployer,
     log: true,
   });
+  console.log("部署中...");
   await nftAuctionProxy.waitForDeployment();
-  console.log("部署成功...");
 
   const proxyAddress=await nftAuctionProxy.getAddress() 
   const impAddress=await upgrades.erc1967.getImplementationAddress(proxyAddress)
@@ -30,7 +30,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     from: deployer.address,
     abi: NftAuction.interface.format("json"),
     address: proxyAddress,
-    // log: true,
+    log: false,
   })
 };
 

@@ -1,7 +1,5 @@
 {
-  "address": "0x3F373e074BCEC513C0635124B0520b5bcF137E50",
   "abi": [
-    "constructor()",
     "error AddressEmptyCode(address)",
     "error ERC1967InvalidImplementation(address)",
     "error ERC1967NonPayable()",
@@ -45,7 +43,8 @@
     "function setMinAuctionDuration(uint256)",
     "function setPlatformFeePercentage(uint256)",
     "function transferOwnership(address)",
-    "function upgradeToAndCall(address,bytes) payable"
+    "function upgradeToAndCall(address,bytes) payable",
+    "function version() pure returns (string)"
   ],
-  "numDeployments": 5
+  "numDeployments": 2
 }
