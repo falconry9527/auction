@@ -1,5 +1,4 @@
 const {upgrades, ethers } = require("hardhat");
-const path = require("path");
 
 // deploy/00_deploy_my_contract.js
 module.exports = async ({ getNamedAccounts, deployments }) => {
