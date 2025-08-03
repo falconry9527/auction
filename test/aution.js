@@ -10,7 +10,7 @@ describe("NftAuction (UUPS Upgradeable)", function () {
   let bidder1;
   let bidder2;
 
-  it("test createAuction ...", async function () {
+  it("test aution function ...", async function () {
      // 模拟4个用户
     [owner, seller, bidder1, bidder2] = await ethers.getSigners();
     // 获取 solidity 的类，从而调用方法
@@ -38,9 +38,8 @@ describe("NftAuction (UUPS Upgradeable)", function () {
         await testERC721.mint(seller.address, i + 1);
         console.log(" 给seller 铸造币::", i+1);
     }
-    // 3. 授权 NftAuction 能对 NFT 进行转账
+    // 3.  seller 授权 NftAuction 能对 seller的testERC721  进行转账
     await testERC721.connect(seller).setApprovalForAll(proxyAddress, true);
-    await testERC721.connect(seller).setApprovalForAll(impAddress, true);
     console.log("授权成功");
 
     // 三. 创建拍卖
@@ -60,17 +59,13 @@ describe("NftAuction (UUPS Upgradeable)", function () {
   });
 
 
-  // it("test v2 new function", async function () {
-  //   // 升级到V2
-  //   NftAuctionV2 = await ethers.getContractFactory("NftAuctionV2");
-  //   const upgraded = await upgrades.upgradeProxy(await proxy.getAddress(), NftAuctionV2);
+  it("test v2 new function", async function () {
+    // 升级到V2
+    NftAuctionV2 = await ethers.getContractFactory("NftAuctionV2");
+    const upgraded = await upgrades.upgradeProxy(await proxy.getAddress(), NftAuctionV2);
 
-  //   // 验证状态保持
-  //   const auction = await upgraded.getAuction(0);
-  //   expect(auction.highestBidder).to.equal(bidder1.address);
-
-  //   // 测试新功能
-  //   expect(await upgraded.version()).to.equal("V2");
-  // });
+    // 测试新功能
+    expect(await upgraded.version()).to.equal("V2");
+  });
 
 });
