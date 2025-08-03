@@ -77,7 +77,7 @@ describe("NftAuction (UUPS Upgradeable)", function () {
     await proxy.connect(bidder2).placeBid(1, testERC20Address,2000);
     const auction2 = await proxy.getAuction(1);
     console.log("出价成功2次...",auction2);
-    // expect(auction.highestBidder).to.equal(bidder2.address);
+    expect(auction2.highestBidder).to.equal(bidder2.address);
 
   });
 
