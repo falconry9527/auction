@@ -2,36 +2,31 @@
 pragma solidity ^0.8;
 import "./NftAuction.sol";
 contract NftAuctionFactory {
-
-    // 工厂模式需要部署2个合约
-    // 1.工厂合约 : 使用 createAuction 创建拍卖会
-    // 2.拍卖会 : NftAuctionFactory.getAuction 找到 Auction 以后，调用Auction 内部方法
-
     address[] public auctions;
-
-    mapping (uint256 tokenId => NftAuction) public auctionMap;
-
-    event AuctionCreated(address indexed auctionAddress,uint256 tokenId);
+    mapping(string => address) public auctionsMapping; // 按卖家组织的拍卖
+    event AuctionCreated(address indexed auction, address indexed seller, address nftContract, uint256 tokenId);
 
     // Create a new auction
     function createAuction(
         uint256 duration,
         uint256 startPrice,
         address nftContractAddress,
-        uint256 tokenId
+        uint256 tokenId,
+        uint256 platformFeePercentage
     ) external returns (address) {
         NftAuction auction = new NftAuction();
-        auction.initialize(
-            msg.sender,
-            duration,
-            startPrice,
-            nftContractAddress,
-            tokenId
-        );
-        auctions.push(address(auction));
-        auctionMap[tokenId] = auction;
 
-        emit AuctionCreated(address(auction), tokenId);
+        auction.initialize(
+            duration,
+            platformFeePercentage
+        );
+
+        address auctionAdrss= address(auction) ;
+        auctions.push(auctionAdrss);
+        string nftContractAddressAndtokenId = nftContract+tokenId ;
+        auctionsMapping[nftContractAddressAndtokenId]=auctionAdrss;
+        emit AuctionCreated(auctionAdrss, msg.sender, nftContractAddress, tokenId);
+
         return address(auction);
     }
 
@@ -39,8 +34,7 @@ contract NftAuctionFactory {
         return auctions;
     }
 
-    function getAuction(uint256 tokenId) external view returns (address) {
-        require(tokenId < auctions.length, "tokenId out of bounds");
-        return auctions[tokenId];
+    function getAuction(string  nftContractAndtokenId ) external view returns (address) {
+        return auctionsMapping[nftContractAndtokenId];
     }
 }
