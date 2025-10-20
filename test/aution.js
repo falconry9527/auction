@@ -13,6 +13,7 @@ describe("NftAuction (UUPS Upgradeable)", function () {
   it("test aution function ...", async function () {
      // 模拟4个用户
     [owner, seller, bidder1, bidder2] = await ethers.getSigners();
+    
     // 获取 solidity 的类，从而调用方法
     NftAuction = await ethers.getContractFactory("NftAuction");
     // 一. 合约准备
